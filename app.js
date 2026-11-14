@@ -111,6 +111,7 @@ async function startGame(continueRun = false) {
 
 function enterGame() {
   closePanel();
+  hasSave = true;
   inGame = true;
   $('title-screen').hidden = true;
   $('game-screen').hidden = false;
@@ -326,6 +327,15 @@ async function recoverStorage() {
         if (await persist(true)) { toast('两份记忆已收好，继续这一轮的故事。'); showSaves(); }
       });
       $('recover-remote').addEventListener('click',() => { state = createState(saved); hasSave = true; enterGame(); });
+    } else if (saved) {
+      // A reconnect from the title must restore an existing cloud save, never
+      // overwrite it with the untouched fresh state created during the outage.
+      state = createState(saved);
+      hasSave = true;
+      syncSettings();
+      renderTitle();
+      showSaves();
+      toast('原来的记忆已经找回，可以继续上次的故事。');
     } else {
       if (await persist(true)) { toast('连接已经恢复，这一夜已经收好。'); showSaves(); }
     }
