@@ -53,3 +53,15 @@ Chrome 未出现在当前可连接浏览器列表中，使用 Codex 应用内浏
 - 正式声明仅启用storage/exchange，玩法分类按官方play-category列表选择互动文游10001、悬疑解谜10002。
 - [GitHub公开仓库](https://github.com/TaulGit/meet-you-in-the-evening)已推送完整源代码、正式生成图片、README、许可、截图与设计记录；API确认`isPrivate:false`、默认分支main、README存在。
 - [首次GitHub Actions验收](https://github.com/TaulGit/meet-you-in-the-evening/actions/runs/43590459755)完成且结论success。
+
+## 2026-11-15 配乐替换
+
+- 换入作者提供的三首Stable Audio音乐：主曲180秒、钟楼悬疑90秒、黎明结局90秒，替换原合成配乐与雨声。
+- 转为192kbps AAC M4A，总8,723,072字节；原WAV不改动、不随包发布。三首完整回解码有效帧数与源一致，来源和校验值见`audio-assets.md`。
+- 普通场景与标题使用主曲循环，钟楼使用悬疑曲循环，黎明曲单次播放。普通落幕切回主曲。场景间约1.1秒交叉淡变，同曲场景不重启；暂停立即停止所有音轨，并保留进度。
+- 悬疑曲播放增益0.23，主曲与结局0.35，平衡源曲约3.66dB响度差。播放器不再叠加原来的合成钢琴或雨声。
+- 配乐行为新增13项确定性测试，覆盖快速切换、延迟播放结果、静音期间新一轮结局、自动播放拒绝、广告/后台暂停后续播。
+- 本次`npm test`合计45/45通过；构建与`star-letter check`通过，游戏包23个文件、14,388,577字节，没有结构或能力声明警告。
+- 本地应用内浏览器已实际播放三首：音频均readyState4、无媒体错误，播放位置持续推进。检查主→钟楼→结局的淡变、旧轨暂停、结局loop=false及暂停恢复（从约5.1秒恢复到23.7秒）。
+- 游戏本体已实际调用`main_theme.m4a`并播放超过12秒，页面error/warn日志为空。设置文案已更新，截图为`docs/screenshots/music-settings.jpg`。
+- 临时音频验收页面已删除，不进入游戏发布包。

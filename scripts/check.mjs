@@ -1,6 +1,7 @@
 import { readFile, access, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { STORY, MEMORIES, ENDINGS } from '../story.js';
+import { TRACKS } from '../sound.js';
 const issues = [];
 const scenes = new Set(['rain-street','cafe','station','archive','clocktower','dawn']);
 for (const [id,node] of Object.entries(STORY.nodes)) {
@@ -33,8 +34,15 @@ for (const file of ['cover','rain-street','cafe','station','archive','clocktower
   } catch { issues.push(`assets/${file}.webp: missing`); }
 }
 const manifest = JSON.parse(await readFile('star-letter.json','utf8'));
+for (const track of Object.values(TRACKS)) {
+  try {
+    const buffer = await readFile(track.src);
+    if (buffer.toString('ascii',4,8) !== 'ftyp') issues.push(`${track.src}: invalid MP4 audio container`);
+    if (buffer.length > 6 * 1024 * 1024) issues.push(`${track.src}: audio exceeds the per-track web budget`);
+  } catch { issues.push(`${track.src}: missing soundtrack`); }
+}
 if (manifest.gameFile !== './dist') issues.push('Star-letter must upload the complete dist/ directory');
 if (!manifest.capabilityDeclaration?.capabilities?.storage?.enabled || !manifest.capabilityDeclaration?.capabilities?.exchange?.enabled) issues.push('Storage and rewarded-ad exchange must be declared');
 if (manifest.priceType !== 0) issues.push('The complete main story must remain free');
 if (issues.length) { console.error(issues.join('\n')); process.exitCode = 1; }
-else console.log(`Checked ${Object.keys(STORY.nodes).length} story nodes, ${Object.keys(MEMORIES).length} memories, ${Object.keys(ENDINGS).length} endings and all referenced game assets.`);
+else console.log(`Checked ${Object.keys(STORY.nodes).length} story nodes, ${Object.keys(MEMORIES).length} memories, ${Object.keys(ENDINGS).length} endings, 3 soundtracks and all referenced game assets.`);

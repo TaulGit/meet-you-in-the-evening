@@ -6,7 +6,7 @@
 - `story.js` 是剧情与跨周目条件的权威来源；当前 127 节点、12 记忆、8 结局。
 - `docs/story-design.md` 包含伏笔、条件与无广告真结局路线。
 - 正式美术位于 `assets/`，全部是生成 WebP。禁止以 SVG、Emoji、Unicode 装饰图标或程序几何图形替代游戏美术；正文、按钮文字仍使用可读 HTML 中文。
-- `docs/art-prompts.md` 记录全部生成提示词。声音由 `sound.js` 原创实时合成。
+- `docs/art-prompts.md` 记录全部生成提示词。声音使用 `assets/audio/` 下三首作者提供的 Stable Audio 配乐，`sound.js` 负责场景切换、淡变与暂停恢复；来源见 `docs/audio-assets.md`。
 
 ## 开发与验证
 

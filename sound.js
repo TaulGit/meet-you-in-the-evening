@@ -1,56 +1,125 @@
-// Original generative score: slow felt-piano voicings and a filtered rain bed.
-// All sound is synthesized locally after an explicit player gesture.
-export const sound = {
-  context: null, master: null, musicOn: false, timer: null, rain: null, step: 0,
-  async start(enabled = true) {
-    this.musicOn = enabled;
-    if (!enabled) { this.stop(); return; }
-    try {
-      const Context = window.AudioContext || window.webkitAudioContext;
-      if (!Context) return;
-      if (!this.context) {
-        this.context = new Context();
-        this.master = this.context.createGain(); this.master.gain.value = 0.2;
-        this.master.connect(this.context.destination);
-        const length = this.context.sampleRate * 3;
-        const buffer = this.context.createBuffer(1, length, this.context.sampleRate);
-        const data = buffer.getChannelData(0);
-        let last = 0;
-        for (let i = 0; i < length; i++) { last = (last + (Math.random() * 2 - 1) * 0.025) / 1.015; data[i] = last; }
-        this.rain = this.context.createBufferSource(); this.rain.buffer = buffer; this.rain.loop = true;
-        const filter = this.context.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 1700;
-        const gain = this.context.createGain(); gain.gain.value = 0.28;
-        this.rain.connect(filter).connect(gain).connect(this.master); this.rain.start();
-      }
-      await this.context.resume();
-      this.master.gain.setTargetAtTime(0.2, this.context.currentTime, 0.6);
-      if (!this.timer) { this.playStep(); this.timer = setInterval(() => this.playStep(), 790); }
-    } catch { /* Audio may be unavailable; reading remains fully usable. */ }
-  },
-  playStep() {
-    if (!this.context || !this.musicOn || document.hidden) return;
-    const chords = [[50,57,62,65,69,74,69,65], [46,53,58,62,65,70,65,62], [53,60,65,69,72,77,72,69], [48,55,60,64,67,72,67,64]];
-    const notes = chords[Math.floor(this.step / 8) % chords.length];
-    this.note(notes[this.step % 8], 0.15, 2.8);
-    if (this.step % 8 === 0) this.note(notes[0] - 12, 0.13, 4.2);
-    this.step++;
-  },
-  note(midi, volume = 0.1, duration = 2) {
-    const t = this.context.currentTime;
-    const frequency = 440 * 2 ** ((midi - 69) / 12);
-    for (const [multiple, amount] of [[1,1],[2,0.26],[3,0.08]]) {
-      const osc = this.context.createOscillator(); osc.type = 'sine'; osc.frequency.value = frequency * multiple;
-      const gain = this.context.createGain(); gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(volume * amount, t + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration / (multiple ** 0.3));
-      osc.connect(gain).connect(this.master); osc.start(t); osc.stop(t + duration);
-    }
-  },
-  stop() {
-    this.musicOn = false;
-    if (this.timer) clearInterval(this.timer);
-    this.timer = null;
-    if (this.context && this.master) this.master.gain.setTargetAtTime(0, this.context.currentTime, 0.2);
-  },
-  memory() { if (this.context && this.musicOn) { this.note(81, 0.06, 1.5); setTimeout(() => this.note(86, 0.045, 1.7), 160); } }
+// Author-supplied Stable Audio scores. Ad/background pauses preserve position.
+// No procedural score or rain is mixed beneath these recordings.
+export const TRACKS = {
+  main: { src:'assets/audio/main_theme.m4a', volume:0.35, loop:true },
+  clocktower: { src:'assets/audio/clocktower_tension.m4a', volume:0.23, loop:true },
+  dawn: { src:'assets/audio/dawn_ending.m4a', volume:0.35, loop:false },
 };
+
+export function trackForScene(scene) {
+  return scene === 'dawn' ? 'dawn' : scene === 'clocktower' ? 'clocktower' : 'main';
+}
+
+function browserAudio(src,key) {
+  const audio = new Audio(new URL(src,import.meta.url).href);
+  audio.dataset.bgm = key;
+  audio.hidden = true;
+  document.body.append(audio);
+  return audio;
+}
+
+export function createSoundPlayer({
+  createAudio = browserAudio,
+  now = () => performance.now(),
+  requestFrame = callback => requestAnimationFrame(callback),
+  cancelFrame = handle => cancelAnimationFrame(handle),
+  fadeDuration = 1100,
+} = {}) {
+  const players = new Map();
+  let scene = 'cover';
+  let current = null;
+  let musicOn = false;
+  let frame = null;
+  let transition = 0;
+  let dawnVisit = 0;
+  let startedDawnVisit = -1;
+
+  function cancelFade() {
+    transition++;
+    if (frame !== null) cancelFrame(frame);
+    frame = null;
+  }
+
+  function getPlayer(key) {
+    if (!players.has(key)) {
+      const audio = createAudio(TRACKS[key].src,key);
+      audio.loop = TRACKS[key].loop;
+      audio.volume = 0;
+      audio.preload = 'metadata';
+      players.set(key,audio);
+    }
+    return players.get(key);
+  }
+
+  function fadeTo(key,duration) {
+    cancelFade();
+    const version = transition;
+    const started = now();
+    const from = new Map([...players].map(([id,audio]) => [id,audio.volume]));
+    const tick = () => {
+      if (!musicOn || version !== transition) return;
+      const amount = Math.min(1,Math.max(0,(now() - started) / Math.max(1,duration)));
+      for (const [id,audio] of players) {
+        const target = id === key ? TRACKS[id].volume : 0;
+        audio.volume = Math.max(0,Math.min(1,(from.get(id) || 0) + (target - (from.get(id) || 0)) * amount));
+        if (amount === 1 && id !== key) audio.pause();
+      }
+      frame = amount < 1 ? requestFrame(tick) : null;
+    };
+    frame = requestFrame(tick);
+  }
+
+  async function activate() {
+    if (!musicOn) return false;
+    const key = trackForScene(scene);
+    const changed = key !== current;
+    const audio = getPlayer(key);
+    const freshDawn = key === 'dawn' && startedDawnVisit !== dawnVisit;
+    if (!changed && !audio.paused && !freshDawn) return true;
+    // The epilogue plays once per visit, including after background/ad pauses.
+    if (!changed && audio.ended && !audio.loop && !freshDawn) return true;
+    if (freshDawn) { audio.currentTime = 0; startedDawnVisit = dawnVisit; }
+    current = key;
+    let operation = transition;
+    try {
+      // Keep play() in the original user gesture for mobile autoplay policies.
+      const playing = audio.play();
+      fadeTo(key,changed ? fadeDuration : Math.min(fadeDuration,600));
+      operation = transition;
+      await playing;
+      if (!musicOn || current !== key || transition !== operation) {
+        if (!musicOn || current !== key) { audio.pause(); audio.volume = 0; }
+        return false;
+      }
+      return true;
+    } catch {
+      if (operation === transition && current === key && musicOn) {
+        cancelFade();
+        for (const player of players.values()) { player.pause(); player.volume = 0; }
+      }
+      // Failed or blocked audio must never interrupt the story.
+      return false;
+    }
+  }
+
+  return {
+    get musicOn() { return musicOn; },
+    setScene(value) {
+      if (trackForScene(value) === 'dawn' && trackForScene(scene) !== 'dawn') dawnVisit++;
+      scene = value;
+      if (musicOn) void activate();
+    },
+    start(enabled = true) {
+      if (!enabled) { this.stop(); return Promise.resolve(false); }
+      musicOn = true;
+      return activate();
+    },
+    stop() {
+      musicOn = false;
+      cancelFade();
+      for (const audio of players.values()) { audio.pause(); audio.volume = 0; }
+    },
+  };
+}
+
+export const sound = createSoundPlayer();

@@ -65,6 +65,7 @@ async function persist(immediate = false) {
 }
 
 function setScene(scene) {
+  sound.setScene(scene);
   if (scene === lastScene) return;
   $('scene').style.backgroundImage = `url("assets/${scene}.webp")`;
   lastScene = scene;
@@ -72,7 +73,6 @@ function setScene(scene) {
 
 function showMemories(ids) {
   if (!ids.length) return;
-  sound.memory();
   toast(`记住了：${ids.map(id => MEMORIES[id].title).join('、')}`);
 }
 
@@ -116,9 +116,9 @@ function enterGame() {
   $('title-screen').hidden = true;
   $('game-screen').hidden = false;
   syncSettings();
-  void sound.start(state.settings.music);
   playTick = Date.now();
   renderNode();
+  void sound.start(state.settings.music);
   void persist();
 }
 
@@ -282,6 +282,7 @@ function showEndings() {
 
 function showEnding(ending) {
   if (!ending) return;
+  sound.setScene(ending.type === 'true' ? 'dawn' : 'ending');
   openPanel('ending',ending.title,`<div class="ending-feature" style="background-image:url('assets/${escapeHTML(ending.scene || 'dawn')}.webp')"></div><p class="ending-subtitle">${escapeHTML(ending.subtitle)}</p><p class="ending-description">${escapeHTML(ending.description)}</p><div class="progress-copy"><span>第 ${state.meta.loop} 次重来</span><span>记忆 ${state.meta.memories.length} / ${Object.keys(MEMORIES).length} · 落幕 ${state.meta.endings.length} / ${Object.keys(ENDINGS).length}</span></div><div class="button-row"><button class="paper-button" id="ending-rewind">${ending.type === 'true' ? '带着明天，再赴一次约' : '带着记忆，再来一次'}</button><button class="paper-button secondary" id="ending-journal">翻开记忆手帐</button><button class="paper-button secondary" id="ending-title">回到标题</button></div>`,ending.type === 'true' ? '这一次，晚风终于吹向明天' : '这一夜落幕了，记忆还在');
   $('ending-rewind').addEventListener('click',() => { rewind(state); enterGame(); });
   $('ending-journal').addEventListener('click',showJournal);
@@ -347,7 +348,7 @@ async function recoverStorage() {
 
 function showSettings() {
   const boolRow = (key,title,description) => `<div class="setting-row"><span>${title}<small>${description}</small></span><button data-setting="${key}" aria-pressed="${state.settings[key]}">${state.settings[key] ? '开启' : '关闭'}</button></div>`;
-  openPanel('settings','阅读设置',`${boolRow('music','晚风与琴声','原创合成钢琴与雨声；首次点击后开始播放')}${boolRow('typing','逐字阅读','关闭后立即显示整段文字')}${boolRow('reduceMotion','减少动态','关闭渐入与转场效果，立即显示文字')}<div class="setting-row"><span>文字大小<small>对话文字可随时调整</small></span><select id="font-size" aria-label="文字大小">${[18,20,22,24].map(n => `<option value="${n}" ${state.settings.fontSize === n ? 'selected' : ''}>${n}</option>`).join('')}</select></div><p class="muted">键盘：空格或 Enter 继续，数字键选择，Esc 合上窗口。自动阅读会在需要选择时停下；略过已读只跳过当前已读段落，不替你做选择。</p><div class="button-row"><button class="paper-button secondary" id="settings-saves">打开夜晚书签</button><button class="paper-button secondary" id="settings-credits">关于这封信</button></div>`,'让这一夜，按你的节奏流动');
+  openPanel('settings','阅读设置',`${boolRow('music','场景配乐','三首场景配乐；首次点击后开始播放')}${boolRow('typing','逐字阅读','关闭后立即显示整段文字')}${boolRow('reduceMotion','减少动态','关闭渐入与转场效果，立即显示文字')}<div class="setting-row"><span>文字大小<small>对话文字可随时调整</small></span><select id="font-size" aria-label="文字大小">${[18,20,22,24].map(n => `<option value="${n}" ${state.settings.fontSize === n ? 'selected' : ''}>${n}</option>`).join('')}</select></div><p class="muted">键盘：空格或 Enter 继续，数字键选择，Esc 合上窗口。自动阅读会在需要选择时停下；略过已读只跳过当前已读段落，不替你做选择。</p><div class="button-row"><button class="paper-button secondary" id="settings-saves">打开夜晚书签</button><button class="paper-button secondary" id="settings-credits">关于这封信</button></div>`,'让这一夜，按你的节奏流动');
   document.querySelectorAll('[data-setting]').forEach(button => button.addEventListener('click',() => {
     const key = button.dataset.setting; state.settings[key] = !state.settings[key]; syncSettings();
     if (key === 'music') void sound.start(state.settings.music);
@@ -369,7 +370,7 @@ function showHistory() {
 }
 
 function showCredits() {
-  openPanel('credits','关于这封信',`<p class="intro">《再赴晚风》是一部中文原创循环叙事游戏。献给那些曾想过“如果当时多听一句”的人。</p><h3>玩法的来处</h3><p>从 Paper Dino 的《Save the Date》获得“反复赴约、记忆打开新选择”的机制灵感。本作人物、故事、对话、结局、代码、美术与音乐均重新创作，未收录原作脚本或素材。</p><h3>画面与声音</h3><p>场景、封面、人物与纸张材质使用 AI 生成位图，并做尺寸与格式处理。配乐与雨声由本作原创程序实时合成。没有使用 Emoji 或 SVG 图标作为游戏美术。</p><h3>关于提示与存档</h3><p>完整主线和所有结局均可免费探索。星匣版可主动观看激励广告获取一条可选提示；关闭或观看失败不发奖励。独立运行版使用本机存档，星匣版使用平台云存档。</p><p class="muted">版本 1.0.0 · 2026<br>代码与素材说明见公开仓库 README。</p><div class="button-row"><button class="paper-button secondary" id="credits-settings">阅读设置</button></div>`,'一夜，六处旧地，一次重新听见');
+  openPanel('credits','关于这封信',`<p class="intro">《再赴晚风》是一部中文原创循环叙事游戏。献给那些曾想过“如果当时多听一句”的人。</p><h3>玩法的来处</h3><p>从 Paper Dino 的《Save the Date》获得“反复赴约、记忆打开新选择”的机制灵感。本作人物、故事、对话、结局、代码、美术与音乐均重新创作，未收录原作脚本或素材。</p><h3>画面与声音</h3><p>场景、封面、人物与纸张材质使用 AI 生成位图，并做尺寸与格式处理。配乐由项目作者使用 Stable Audio 生成并提供，随主剧情、钟楼和黎明场景切换。没有使用 Emoji 或 SVG 图标作为游戏美术。</p><h3>关于提示与存档</h3><p>完整主线和所有结局均可免费探索。星匣版可主动观看激励广告获取一条可选提示；关闭或观看失败不发奖励。独立运行版使用本机存档，星匣版使用平台云存档。</p><p class="muted">版本 1.0.0 · 2026<br>代码与素材说明见公开仓库 README。</p><div class="button-row"><button class="paper-button secondary" id="credits-settings">阅读设置</button></div>`,'一夜，六处旧地，一次重新听见');
   $('credits-settings').addEventListener('click',showSettings);
 }
 
