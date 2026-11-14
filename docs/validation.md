@@ -42,4 +42,11 @@ Chrome 未出现在当前可连接浏览器列表中，使用 Codex 应用内浏
 - 星匣真实宿主握手、云存档跨设备续读、实际视频库存和播放完成仍需创作者在平台预览中验收。官方 skill 将该体验确认留给创作者；本次按用户要求仅上传草稿，不进行正式发布。
 - 兑换项已审核上架不代表所有设备随时有视频库存；无库存不阻碍完整主线或任何结局。
 
-草稿上传与公开仓库结果以交付时 CLI / GitHub 返回为准。
+## 平台与仓库交付结果
+
+- `star-letter publish --draft`（CLI v0.1.47）返回 `ok:true`、`status:draft`。游戏11640，编辑版本34501，`liveVersionId:null`、`publishTime:0`，未正式发布。
+- 服务端容量预检通过：20个文件，游戏包5,663,905字节；没有容量违规。
+- 从平台返回的实际游戏入口解析全部相对资源，逐个检查：20/20 HTTP 200、MIME匹配、SHA-256与最终dist文件一致，无404或内容差异。不对外提供脱离宿主的入口CDN地址。
+- 正式声明仅启用storage/exchange，玩法分类按官方play-category列表选择互动文游10001、悬疑解谜10002。
+- [GitHub公开仓库](https://github.com/TaulGit/meet-you-in-the-evening)已推送完整源代码、正式生成图片、README、许可、截图与设计记录；API确认`isPrivate:false`、默认分支main、README存在。
+- [首次GitHub Actions验收](https://github.com/TaulGit/meet-you-in-the-evening/actions/runs/43590459755)完成且结论success。

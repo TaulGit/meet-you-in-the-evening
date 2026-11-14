@@ -19,7 +19,7 @@
 
 ## 星匣合同
 
-- 游戏 ID 11640，交付为草稿，未正式发布。除非用户明确要求，不执行正式 `star-letter publish`（不带 --draft）。
+- 游戏 ID 11640，编辑版本34501，交付为草稿，未正式发布。除非用户明确要求，不执行正式 `star-letter publish`（不带 --draft）。
 - 官方 SDK 只用 v2 IIFE。实现依据 v2.7.2 / docsRev43；更改调用前按 star-letter-game-sdk skill 拉对应官方文档。
 - 仅启用 storage/exchange。SDK 的 gameId 由宿主注入，不在 init 中写死。
 - 云档一个 key：`save:evening-breeze:v1`；平台内读失败禁止当作空档覆盖，也禁止用本机档替代云端失败。

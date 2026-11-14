@@ -110,6 +110,8 @@ star-letter exchange status 7519 --status 1
 
 平台 create 最初返回 legacy 能力声明；该平台要求迁移 legacy→v1 时保留 storage/oss/ai/exchange 四项，再通过第二次声明更新关闭 ai/oss。目标有效声明仍是 storage、exchange 开启、ai、oss 关闭；这不要求游戏调用未使用的能力。
 
+2026-11-14 已使用 CLI v0.1.47 保存最终草稿：gameId11640、editingVersionId34501、liveVersionId为空。新版发布清单要求填写官方玩法分类，已通过 `star-letter play-category list` 核对并采用互动文游10001和悬疑解谜10002。草稿上传成功，服务端容量预检通过；全部20个上传文件的HTTP、MIME和内容哈希核对通过。未正式发布。
+
 ### 取消和异常码
 
 官方广告提前关闭码为 `AD_USER_CANCELLED`；`EXCHANGE_CANCELLED` 对应星光币确认取消，本作同样按取消处理但不会主动进入 coin 路径。`AD_TIMEOUT`、`AD_WATCH_CONFIRM_TIMEOUT`、`AD_FAILED` 和 `EXCHANGE_TIMEOUT` 均不发奖；`EXCHANGE_PATH_NOT_AVAILABLE`、`ITEM_NOT_FOUND`、`NOT_IMPLEMENTED` 表示入口不可用。官方未保证独立 `AD_NO_FILL` 返回码，无填充被平台映射为失败或未知错误时也不会发奖。未知结果禁用当前会话的新兑换，不自动重试。
