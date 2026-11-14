@@ -1,0 +1,14 @@
+{
+  "name": "meet-you-in-the-evening",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "再赴晚风：中文原创循环叙事游戏",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.js",
+    "check": "node scripts/check.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

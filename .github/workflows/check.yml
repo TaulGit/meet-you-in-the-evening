@@ -1,0 +1,15 @@
+name: Game checks
+on:
+  push:
+  pull_request:
+jobs:
+  game:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify story and assets
+        run: npm run check
+      - name: Test game and platform behavior
+        run: npm test
+      - name: Build complete game
+        run: npm run build

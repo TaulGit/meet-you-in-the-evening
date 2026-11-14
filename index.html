@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#172a2b">
+  <meta name="description" content="再赴晚风：一场反复到来的雨夜邀约。带着记忆，改变下一次相逢。完整中文循环叙事游戏。">
+  <title>再赴晚风 · 一封没有寄出的信</title>
+  <link rel="icon" href="assets/cover.webp" type="image/webp">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preload" as="image" href="assets/cover.webp">
+  <script defer src="https://gz-vchar-pub.nosdn.127.net/star-letter/game-sdk/v2/sdk.iife.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <div id="app">
+    <div id="scene" aria-hidden="true"></div>
+    <div class="scene-shade" aria-hidden="true"></div>
+    <main id="title-screen" class="screen title-screen">
+      <div class="edition">一封没有寄出的信</div>
+      <div class="title-copy">
+        <p class="eyebrow">一场反复到来的雨夜邀约</p>
+        <h1>再赴<span>晚风</span></h1>
+        <p class="tagline">如果那天的晚风，再吹一次。<br>这一次，你会听见她没有说完的话吗？</p>
+        <nav class="title-actions" aria-label="主菜单">
+          <button id="continue-game" class="primary" hidden>继续这一夜 <small id="continue-time"></small></button>
+          <button id="start-game" class="primary">赴约 <small>从 19:07 开始</small></button>
+          <div class="menu-row"><button data-panel="journal">记忆手帐</button><button data-panel="endings">落幕收藏</button><button data-panel="settings">阅读设置</button></div>
+        </nav>
+      </div>
+      <footer class="title-footer"><span>你记得的，会留到下一次相逢。</span><button data-panel="credits">关于这封信</button></footer>
+    </main>
+
+    <main id="game-screen" class="screen game-screen" hidden>
+      <header class="game-header">
+        <div class="location-block"><span id="loop-label" class="eyebrow"></span><h2 id="location-label"></h2><span id="time-label"></span></div>
+        <nav class="game-tools" aria-label="游戏菜单">
+          <button id="journal-button" data-panel="journal">手帐 <span id="memory-count"></span></button>
+          <button data-panel="saves">存读档</button><button data-panel="settings">设置</button><button id="return-title">标题</button>
+        </nav>
+      </header>
+      <div id="scene-caption" class="scene-caption" aria-hidden="true"></div>
+      <img id="portrait" class="portrait" src="assets/linxia.webp" alt="林夏" hidden>
+      <aside id="inspect-tools" class="inspect-tools" aria-label="观察场景"></aside>
+      <section id="dialog" class="dialog" aria-label="剧情">
+        <div class="dialog-top"><span id="speaker"></span><div class="reading-tools"><button id="skip-read">略过已读</button><button id="auto-button">自动：关</button><button data-panel="history">回看</button></div></div>
+        <p id="dialog-text" class="dialog-text" aria-live="polite"></p>
+        <div id="choices" class="choices" aria-label="你的选择"></div>
+        <button id="next-button" class="next-button">继续 <span aria-hidden="true">→</span></button>
+        <div class="dialog-bottom"><span id="paragraph-label"></span><span id="save-status" role="status">正在整理记忆</span></div>
+      </section>
+      <footer class="game-footer"><span>空格继续 · 数字键选择 · Esc 返回</span><button id="rewind-button">回到这一夜的开始</button></footer>
+    </main>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <dialog id="panel" class="panel"><div class="panel-frame"><header class="panel-header"><div><span id="panel-kicker" class="eyebrow"></span><h2 id="panel-title"></h2></div><button id="close-panel" aria-label="关闭窗口">合上</button></header><div id="panel-content" class="panel-content"></div></div></dialog>
+    <div id="loading" class="loading"><div><p class="eyebrow">再赴晚风</p><p>正在翻开这一夜……</p></div></div>
+  </div>
+  <noscript>请启用 JavaScript，才能赴这场晚风之约。</noscript>
+</body>
+</html>
