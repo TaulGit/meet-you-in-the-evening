@@ -1,9 +1,9 @@
 // Author-supplied Stable Audio scores. Ad/background pauses preserve position.
 // No procedural score or rain is mixed beneath these recordings.
 export const TRACKS = {
-  main: { src:'assets/audio/main_theme.m4a', volume:0.35, loop:true },
-  clocktower: { src:'assets/audio/clocktower_tension.m4a', volume:0.23, loop:true },
-  dawn: { src:'assets/audio/dawn_ending.m4a', volume:0.35, loop:false },
+  main: { src:'assets/audio/main_theme.mp3', volume:0.35, loop:true },
+  clocktower: { src:'assets/audio/clocktower_tension.mp3', volume:0.23, loop:true },
+  dawn: { src:'assets/audio/dawn_ending.mp3', volume:0.35, loop:false },
 };
 
 export function trackForScene(scene) {

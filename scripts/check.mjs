@@ -37,7 +37,8 @@ const manifest = JSON.parse(await readFile('star-letter.json','utf8'));
 for (const track of Object.values(TRACKS)) {
   try {
     const buffer = await readFile(track.src);
-    if (buffer.toString('ascii',4,8) !== 'ftyp') issues.push(`${track.src}: invalid MP4 audio container`);
+    const mp3 = buffer.toString('ascii',0,3) === 'ID3' || (buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0);
+    if (!mp3) issues.push(`${track.src}: invalid MP3 audio container`);
     if (buffer.length > 6 * 1024 * 1024) issues.push(`${track.src}: audio exceeds the per-track web budget`);
   } catch { issues.push(`${track.src}: missing soundtrack`); }
 }
